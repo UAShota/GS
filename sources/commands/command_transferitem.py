@@ -13,7 +13,7 @@ class DwgbCmdTransferItem(DwgbCmdCustom):
     def __init__(self, database: DwgbDatabase, transport: DwgbTransport):
         """ Конструктор """
         super().__init__(database, transport)
-        self.regGet = self.getRegex(r"^👝\[id(\d+)\|(.+?)], получено: (.+?)(, )?(\d+)?( штук)? от игрока \[id(\d+)\|(.+?)]")
+        self.regGet = self.getRegex(r"^👝\[id(\d+)\|(.+?)], получено: .(?:(\d+).+?)?(.+?) от игрока \[id(\d+)\|(.+?)]")
         self.loot = u"🛡"
 
     def work(self, message: DwgbMessage):
@@ -30,14 +30,14 @@ class DwgbCmdTransferItem(DwgbCmdCustom):
         tmp_transfer.message = message
         tmp_transfer.sourceId = int(tmp_data[1])
         tmp_transfer.sourceName = tmp_data[2]
-        tmp_transfer.type = tmp_data[3].lower()
+        tmp_transfer.type = tmp_data[4].lower()
         # Если количество не указано = значит 1 штука
-        if tmp_data[5]:
-            tmp_transfer.count = int(tmp_data[5])
+        if tmp_data[3]:
+            tmp_transfer.count = int(tmp_data[3])
         else:
             tmp_transfer.count = 1
-        tmp_transfer.targetId = int(tmp_data[7])
-        tmp_transfer.targetName = tmp_data[8]
+        tmp_transfer.targetId = int(tmp_data[5])
+        tmp_transfer.targetName = tmp_data[6]
         tmp_transfer.item = self.getStorage(tmp_transfer.type)
         # Передача на склад
         if tmp_transfer.sourceId == self.transport.getOwnerId():
