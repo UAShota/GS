@@ -32,7 +32,7 @@ class DwgbCmdAdminStorage(DwgbCmdCustom):
     def __init__(self, database: DwgbDatabase, transport: DwgbTransport):
         """ Конструктор """
         super().__init__(database, transport)
-        self.date = self.setcosttime()
+        self.date = datetime.min
         self.regItem = self.getRegex(r"(?:^склад (\d+)?\s*предмет ([\(\)\w|\s]+))")
         self.regDelete = self.getRegex(r"^склад (\d+)?\s*удалить (\D+)")
         self.regItems = self.getRegex(r"(?: -(\S+) (\S+))")
@@ -51,7 +51,7 @@ class DwgbCmdAdminStorage(DwgbCmdCustom):
         if (message.user == self._GAME_BOT_ID) and (self.regBag.match(message.text)):
             return self.rebag(message)
         # Auth
-        if (message.user != 384297286) and (message.user != 66313242) and (message.user != 619706007):
+        if (message.user != 384297286) and (message.user != 66313242) and (message.user != 637178925):
             return False
         # Сохранение цены
         tmp_match = self.regSave.match(message.text)
@@ -251,7 +251,7 @@ class DwgbCmdAdminStorage(DwgbCmdCustom):
             DwgbCmdConst.ITEM = None
             return self.transport.writeChannel("Аукцион недоступен для %s%s" % (tmp_item.icon, tmp_item.id.capitalize()), message, False)
         # Цена
-        tmp_cost = str(max(1000, tmp_item.average))
+        tmp_cost = str(tmp_item.average)
         self.setcostdb(tmp_cost)
         # Ответим
         self.transport.writeChannel("Установлено 🌕%s для %s%s" % (tmp_cost, tmp_item.icon, tmp_item.id.capitalize()), message, False)
