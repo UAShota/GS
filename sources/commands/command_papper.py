@@ -12,10 +12,10 @@ class DwgbCmdPapper(DwgbCmdCustom):
     """ Команда проверки баланса """
 
     # Создание таблицы
-    __QUERY_PAPPER_CREATE = "CREATE TABLE IF NOT EXISTS dwgb_papper (" + "uid serial primary key, name VARCHAR (50) NOT NULL, data VARCHAR (150) NOT NULL);" + "CREATE UNIQUE INDEX IF NOT EXISTS name_idx ON dwgb_papper (name);"
+    __QUERY_PAPPER_CREATE = "CREATE TABLE IF NOT EXISTS dwgb_papper (" + "uid serial primary key, name VARCHAR (50) NOT NULL, data VARCHAR (150) NOT NULL, date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP);" + "CREATE UNIQUE INDEX IF NOT EXISTS name_idx ON dwgb_papper (name);"
 
     # Запрос объявлений
-    __QUERY_PAPPER_GET = "SELECT name, data FROM dwgb_papper"
+    __QUERY_PAPPER_GET = "SELECT name, data FROM dwgb_papper where date > current_date - interval '7 days'"
 
     # Добавление объявления
     __QUERY_PAPPER_ADD = "INSERT INTO dwgb_papper (name, data) values(%(name)s, %(data)s) ON CONFLICT (name) DO UPDATE SET data = %(data)s"
@@ -57,7 +57,7 @@ class DwgbCmdPapper(DwgbCmdCustom):
 
     def boardName(self, message: DwgbMessage):
         """ Papper owner """
-        return "💬[id%s|%s]" % (message.user, message.name)
+        return "💬[id%s|%s]" % (message.user, message.name.split()[0])
 
     def doBoardAdd(self, message: DwgbMessage, _match: {}):
         """ Добавление объявления """
