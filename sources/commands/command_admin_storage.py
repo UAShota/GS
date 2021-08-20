@@ -4,10 +4,9 @@ Changing storage values
 import json
 import math
 import re
+import requests
 import traceback
 from datetime import datetime, timedelta
-
-import requests
 from matplotlib import pyplot as plt
 
 from .command_custom import DwgbCmdConst, DwgbCmdCustom
@@ -41,6 +40,7 @@ class DwgbCmdAdminStorage(DwgbCmdCustom):
         self.regInfo = self.getRegex(r"^склад цену(.+)?")
         self.regSave = self.getRegex(r"^(хорошо|\d+)")
         self.regBag = self.getRegex(r"^золота - \d+\.")
+        self.regInventory = self.getRegex(r"^(.+?) - (\d+)\.$")
         self.channel = 0
 
     def work(self, message: DwgbMessage):
@@ -227,7 +227,7 @@ class DwgbCmdAdminStorage(DwgbCmdCustom):
     def setcostlast(self):
         """ Search a last day good """
         tmp_min = datetime.max
-        for tmpItem, tmp_item in DwgbCmdConst.STORE_DATA.items():
+        for tmp_key, tmp_item in DwgbCmdConst.STORE_DATA.items():
             if tmp_item.icon != "📕" and tmp_item.icon != "📘":
                 continue
             if tmp_item.date < tmp_min:
@@ -268,7 +268,7 @@ class DwgbCmdAdminStorage(DwgbCmdCustom):
     def rebag(self, message: DwgbMessage):
         """ Проверка предметов """
         message.channel = self.channel
-        tmp_bags = self.getRegex(r"^(.+?) - (\d+)\.$").findall(message.text)
+        tmp_bags = self.regInventory.findall(message.text)
         tmp_item: DwgbStorage
         tmp_key: str
         tmp_dict = {}
@@ -282,9 +282,12 @@ class DwgbCmdAdminStorage(DwgbCmdCustom):
                 tmp_find = "осколки сердца"
             else:
                 tmp_find = tmp_key
+            tmp_book = "книга - " + tmp_find
             # Поищем
             if tmp_find in tmp_dict:
                 tmp_count = tmp_dict[tmp_find]
+            elif tmp_book in tmp_dict:
+                tmp_count = tmp_dict[tmp_book]
             else:
                 tmp_count = 0
             # Установим
@@ -297,8 +300,9 @@ class DwgbCmdAdminStorage(DwgbCmdCustom):
                 tmp_count = math.trunc(tmp_dict[tmp_page] / 5)
             else:
                 tmp_count = 0
+            # Сохраним
             if tmp_item.valueex != tmp_count:
                 self.setStorage(0, tmp_key, -tmp_item.valueex + tmp_count, -tmp_item.valueex + tmp_count)
-                self.transport.writeChannel("🐼Восстановлены книги %s для %s%s" % (tmp_count, tmp_item.icon, tmp_item.id.capitalize()), message, False)
+                self.transport.writeChannel("🐼Восстановлены страницы %s для %s%s" % (tmp_count, tmp_item.icon, tmp_item.id.capitalize()), message, False)
         # Все хорошо
         return True
