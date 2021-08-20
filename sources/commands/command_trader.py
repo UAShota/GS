@@ -49,15 +49,15 @@ class DwgbCmdTrader(DwgbCmdCustom):
                 for tmp_key, tmp_packet in tmp_json.items():
                     if not tmp_packet:
                         continue
+                    # С этого списка уже все купили
                     tmp_time = tmp_packet[0]
                     tmp_name = tmp_packet[2]
+                    if tmp_key in self.buytimes and (self.buytimes[tmp_key] == tmp_time):
+                        continue
                     for tmp_item in tmp_packet[1]:
                         tmp_count = tmp_item[0]
                         tmp_cost = tmp_item[1]
                         tmp_lot = tmp_item[2]
-                        # С этого списка уже все купили
-                        if tmp_key in self.buytimes and (self.buytimes[tmp_key] == tmp_time):
-                            continue
                         # Определим нужно ли его скупать
                         if tmp_name not in DwgbCmdConst.STORE_DATA:
                             continue
@@ -72,8 +72,8 @@ class DwgbCmdTrader(DwgbCmdCustom):
                         message = DwgbMessage()
                         message.channel = self._GAME_BOT_ID
                         self.transport.writeChannel("Купить лот %s" % tmp_lot, message, False)
-                        self.buytimes[tmp_key] = tmp_time
                         sleep(15)
+                    self.buytimes[tmp_key] = tmp_time
                 sleep(60)
             except Exception as e:
                 print(e)
