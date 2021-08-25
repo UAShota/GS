@@ -51,7 +51,7 @@ class DwgbCmdAdminStorage(DwgbCmdCustom):
         if (message.user == self._GAME_BOT_ID) and (self.regBag.match(message.text)):
             return self.rebag(message)
         # Auth
-        if (message.user != 384297286) and (message.user != 66313242) and (message.user != 637178925):
+        if (message.user != 384297286) and (message.user != 66313242) and (message.user != 38752464):
             return False
         # Сохранение цены
         tmp_match = self.regSave.match(message.text)

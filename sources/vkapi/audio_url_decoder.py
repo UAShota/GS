@@ -6,7 +6,7 @@ from .exceptions import VkAudioUrlDecodeError
 VK_STR = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN0PQRSTUVWXYZO123456789+/="
 
 
-def splice(l, a, b, c):
+def splice(arr, a, b, c):
     """ JS's Array.prototype.splice
 
     var x = [1, 2, 3],
@@ -18,10 +18,11 @@ def splice(l, a, b, c):
     x, y = splice(x, 0, 2, 1337)
     """
 
-    return l[:a] + [c] + l[a + b:], l[a:a + b]
+    return arr[:a] + [c] + arr[a + b:], arr[a:a + b]
 
 
 def decode_audio_url(string, user_id):
+    """ Decode audio """
     vals = string.split("?extra=", 1)[1].split("#")
 
     tstr = vk_o(vals[0])
@@ -59,6 +60,7 @@ def decode_audio_url(string, user_id):
 def vk_o(string):
     result = []
     index2 = 0
+    i = 0
 
     for s in string:
         sym_index = VK_STR.find(s)

@@ -12,13 +12,14 @@ import random
 import re
 import threading
 import time
+from urllib.parse import urlparse, parse_qs
 
 import requests
 import six
 
-from ..jconfig import *
 from .enums import VkUserPermissions
 from .exceptions import *
+from .jconfig import *
 from .utils import (
     code_from_number, search_re, clear_string,
     cookies_to_list, set_cookies_from_list
@@ -33,8 +34,11 @@ RE_TOKEN_URL = re.compile(r'location\.href = "(.*?)"\+addr;')
 RE_PHONE_PREFIX = re.compile(r'label ta_r">\+(.*?)<')
 RE_PHONE_POSTFIX = re.compile(r'phone_postfix">.*?(\d+).*?<')
 
-
 DEFAULT_USER_SCOPE = sum(VkUserPermissions)
+
+
+def get_unknown_exc_str(s):
+    return 'Unknown error ({}). Please send bugreport to GitHub or vk_api@python273.pw'.format(s)
 
 
 class VkApi(object):
@@ -87,7 +91,7 @@ class VkApi(object):
 
     def __init__(self, login=None, password=None, token=None,
                  auth_handler=None, captcha_handler=None,
-                 config=jconfig.Config, config_filename='vk_config.v2.json',
+                 config=Config, config_filename='vk_config.v2.json',
                  api_version='5.92', app_id=6222115, scope=DEFAULT_USER_SCOPE,
                  client_secret=None, session=None):
 
@@ -126,8 +130,8 @@ class VkApi(object):
     @property
     def _sid(self):
         return (
-            self.http.cookies.get('remixsid') or
-            self.http.cookies.get('remixsid6')
+                self.http.cookies.get('remixsid') or
+                self.http.cookies.get('remixsid6')
         )
 
     def auth(self, reauth=False, token_only=False):
@@ -301,9 +305,7 @@ class VkApi(object):
             self.storage.cookies = cookies_to_list(self.http.cookies)
             self.storage.save()
         else:
-            raise AuthError(
-                'Unknown error. Please send bugreport to vk_api@python273.pw'
-            )
+            raise AuthError(get_unknown_exc_str('AUTH; no sid'))
 
         response = self._pass_security_check(response)
 
@@ -319,10 +321,7 @@ class VkApi(object):
         auth_hash = search_re(RE_AUTH_HASH, auth_response.text)
 
         if not auth_hash:
-            raise TwoFactorError(
-                'Two-factor authentication can not be passed:'
-                ' could not find "hash" value. Please send a bugreport'
-            )
+            raise TwoFactorError(get_unknown_exc_str('2FA; no hash'))
 
         code, remember_device = self.error_handlers[TWOFACTOR_CODE]()
 
@@ -350,10 +349,7 @@ class VkApi(object):
         elif status == '2':
             raise TwoFactorError('Recaptcha required')
 
-        raise TwoFactorError(
-            'Two-factor authentication can not be passed.'
-            ' Please send a bugreport'
-        )
+        raise TwoFactorError(get_unknown_exc_str('2FA; unknown status'))
 
     def _pass_security_check(self, response=None):
         """ Функция для обхода проверки безопасности (запрос номера телефона)
@@ -446,8 +442,18 @@ class VkApi(object):
                 response = self.http.get(url)
 
         if 'access_token' in response.url:
-            params = response.url.split('#', 1)[1].split('&')
-            token = dict(param.split('=', 1) for param in params)
+            parsed_url = urlparse(response.url)
+            parsed_query = parse_qs(parsed_url.query)
+
+            if 'authorize_url' in parsed_query:
+                parsed_url = urlparse(parsed_query['authorize_url'][0])
+
+            parsed_query = parse_qs(parsed_url.fragment)
+
+            token = {k: v[0] for k, v in parsed_query.items()}
+
+            if not isinstance(token.get('access_token'), str):
+                raise AuthError(get_unknown_exc_str('API AUTH; no access_token'))
 
             self.token = token
 
@@ -539,7 +545,7 @@ class VkApi(object):
         :param error: исключение
         """
 
-        pass  # TODO: write me
+        pass
 
     def http_handler(self, error):
         """ Обработчик ошибок соединения
@@ -619,7 +625,7 @@ class VkApi(object):
 
             response = self.http.post(
                 'https://api.vk.com/method/' + method,
-                values
+                values,
             )
             self.last_request = time.time()
 
@@ -631,8 +637,8 @@ class VkApi(object):
 
             if response is not None:
                 return response
-
-            raise error
+            else:
+                raise error
 
         if 'error' in response:
             error = ApiError(self, method, values, raw, response['error'])
@@ -657,11 +663,13 @@ class VkApi(object):
 
         return response if raw else response['response']
 
+
 class VkApiGroup(VkApi):
     """Предназначен для авторизации с токеном группы.
     Увеличивает частоту обращений к API с 3 до 20 в секунду.
     """
     RPS_DELAY = 1 / 20.0
+
 
 class VkApiMethod(object):
     """ Дает возможность обращаться к методам API через:
@@ -672,11 +680,11 @@ class VkApiMethod(object):
     >>> vk.wall.get_by_id(posts='...')
     """
 
-    __slots__ = ('_vk', '_method')
+    __slots__ = ('vk', 'method')
 
     def __init__(self, vk, method=None):
-        self._vk = vk
-        self._method = method
+        self.vk = vk
+        self.method = method
 
     def __getattr__(self, method):
         if '_' in method:
@@ -684,8 +692,8 @@ class VkApiMethod(object):
             method = m[0] + ''.join(i.title() for i in m[1:])
 
         return VkApiMethod(
-            self._vk,
-            (self._method + '.' if self._method else '') + method
+            self.vk,
+            (self.method + '.' if self.method else '') + method
         )
 
     def __call__(self, **kwargs):
@@ -693,4 +701,4 @@ class VkApiMethod(object):
             if isinstance(v, (list, tuple)):
                 kwargs[k] = ','.join(str(x) for x in v)
 
-        return self._vk.method(self._method, kwargs)
+        return self.vk.method(self.method, kwargs)

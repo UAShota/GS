@@ -6,8 +6,8 @@
 :copyright: (c) 2019 python273
 """
 
-import re
 import json
+import re
 import time
 from itertools import islice
 
@@ -605,7 +605,7 @@ def scrap_ids_from_html(html, filter_root_el=None):
 
 
 def scrap_tracks(ids, user_id, http, convert_m3u8_links=True):
-
+    """ Scrap tracks """
     last_request = 0.0
 
     for ids_group in [ids[i:i + 10] for i in range(0, len(ids), 10)]:

@@ -81,6 +81,7 @@ HTTP_COOKIE_ARGS = [
 
 
 def cookie_to_dict(cookie):
+    """ Cookie to dict """
     cookie_dict = {
         k: v for k, v in six.iteritems(cookie.__dict__) if k in HTTP_COOKIE_ARGS
     }
@@ -92,6 +93,7 @@ def cookie_to_dict(cookie):
 
 
 def cookie_from_dict(d):
+    """ Cookie from dict """
     return Cookie(**d)
 
 

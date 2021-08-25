@@ -11,7 +11,6 @@ import six
 
 from .utils import sjson_dumps
 
-
 MAX_BUTTONS_ON_LINE = 5
 MAX_DEFAULT_LINES = 10
 MAX_INLINE_LINES = 6
@@ -186,13 +185,13 @@ class VkKeyboard(object):
             }
         })
 
-    def add_vkpay_button(self, hash, payload=None):
+    def add_vkpay_button(self, buttonhash, payload=None):
         """ Добавить кнопку с оплатой с помощью VKPay.
             Всегда занимает всю ширину линии.
 
-        :param hash: Параметры платежа VKPay и ID приложения
+        :param buttonhash: Параметры платежа VKPay и ID приложения
         (в поле aid) разделённые &
-        :type hash: str
+        :type buttonhash: str
         :param payload: Параметр для совместимости со старыми клиентами
         :type payload: str or list or dict
         """
@@ -213,7 +212,7 @@ class VkKeyboard(object):
             'action': {
                 'type': button_type,
                 'payload': payload,
-                'hash': hash
+                'hash': buttonhash
             }
         })
 

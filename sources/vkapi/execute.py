@@ -33,6 +33,7 @@ class VkFunction(object):
         self.return_raw = return_raw
 
     def compile(self, args):
+        """ Compile minify """
         compiled_args = {}
 
         for key, value in six.iteritems(args):
@@ -43,7 +44,7 @@ class VkFunction(object):
 
         return self._minified_code % compiled_args
 
-    def __call__(self, vk, *args, **kwargs):
+    def __call__(self, vk: VkApi, *args, **kwargs):
         """
         :param vk: VkApi или VkApiMethod
         :param \*args:
@@ -56,7 +57,7 @@ class VkFunction(object):
             )
 
         if isinstance(vk, VkApiMethod):
-            vk = vk._vk
+            vk = vk.vk
 
         args = parse_args(self.args, args, kwargs)
 
@@ -68,10 +69,12 @@ class VkFunction(object):
 
 
 def minify(code):
+    """ Minify JSON """
     return ''.join(i.strip() for i in code.splitlines())
 
 
 def parse_args(function_args, args, kwargs):
+    """ Parse args for request """
     parsed_args = {}
 
     for arg_name in six.iterkeys(kwargs):

@@ -15,38 +15,47 @@ NEED_VALIDATION_CODE = 17
 
 
 class VkApiError(Exception):
+    """ Api error """
     pass
 
 
 class AccessDenied(VkApiError):
+    """ Access denied """
     pass
 
 
 class AuthError(VkApiError):
+    """ Auth error """
     pass
 
 
 class LoginRequired(AuthError):
+    """ Login required """
     pass
 
 
 class PasswordRequired(AuthError):
+    """ Password required """
     pass
 
 
 class BadPassword(AuthError):
+    """ Bad password """
     pass
 
 
 class AccountBlocked(AuthError):
+    """ Account blocked """
     pass
 
 
 class TwoFactorError(AuthError):
+    """ Two factor auth error """
     pass
 
 
 class SecurityCheck(AuthError):
+    """ Check user security """
 
     def __init__(self, phone_prefix=None, phone_postfix=None, response=None):
         super(SecurityCheck, self).__init__()
@@ -66,6 +75,7 @@ class SecurityCheck(AuthError):
 
 
 class ApiError(VkApiError):
+    """ Analyze api error """
 
     def __init__(self, vk, method, values, raw, error):
         super(ApiError, self).__init__()
@@ -88,6 +98,7 @@ class ApiError(VkApiError):
 
 
 class ApiHttpError(VkApiError):
+    """ Analyze http error """
 
     def __init__(self, vk, method, values, raw, response):
         super(ApiHttpError, self).__init__()
@@ -108,6 +119,7 @@ class ApiHttpError(VkApiError):
 
 
 class Captcha(VkApiError):
+    """ Captcha validator """
 
     def __init__(self, vk, captcha_sid, func, args=None, kwargs=None, url=None):
         super(Captcha, self).__init__()
@@ -161,18 +173,24 @@ class Captcha(VkApiError):
 
 
 class VkAudioException(Exception):
+    """ Audio exception """
     pass
 
 
 class VkAudioUrlDecodeError(VkAudioException):
+    """ Audio error """
     pass
 
 
 class VkToolsException(VkApiError):
-    pass
+    """ Tool exception """
+    def __init__(self, *args, response=None):
+        super().__init__(*args)
+        self.response = response
 
 
 class VkRequestsPoolException(Exception):
-    def __init__(self, error, *args, **kwargs):
+    """ Pool exception """
+    def __init__(self, error, *args):
         self.error = error
-        super(VkRequestsPoolException, self).__init__(*args, **kwargs)
+        super(VkRequestsPoolException, self).__init__(*args)

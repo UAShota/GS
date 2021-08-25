@@ -8,7 +8,6 @@
 
 from .vk_api import VkApi, VkApiMethod
 
-
 STORY_ALLOWED_LINK_TEXTS = {
     'to_store', 'vote', 'more', 'book', 'order',
     'enroll', 'fill', 'signup', 'buy', 'ticket',
@@ -39,7 +38,7 @@ class VkUpload(object):
 
     @property
     def http(self):
-        return self.vk._vk.http
+        return self.vk.vk.http
 
     def photo(self, photos, album_id,
               latitude=None, longitude=None, caption=None, description=None,
@@ -98,7 +97,7 @@ class VkUpload(object):
             response = self.http.post(url, files=photo_files)
 
         return self.vk.photos.saveMessagesPhoto(**response.json())
-        
+
     def photo_group_widget(self, photo, image_type):
         """ Загрузка изображений в коллекцию сообщества для виджетов приложений сообществ
 
@@ -378,7 +377,6 @@ class VkUpload(object):
             ).json())
             return response
 
-
     def document(self, doc, title=None, tags=None, group_id=None,
                  to_wall=False, message_peer_id=None, doc_type=None):
         """ Загрузка документа
@@ -387,6 +385,9 @@ class VkUpload(object):
         :param title: название документа
         :param tags: метки для поиска
         :param group_id: идентификатор сообщества (если загрузка идет в группу)
+        :param to_wall: отправка на стену
+        :param message_peer_id: ответ на комментарий
+        :param doc_type тип документа
         """
 
         values = {

@@ -15,6 +15,8 @@ import six
 from six.moves import range
 
 CHAT_START_ID = int(2E9)  # id с которого начинаются беседы
+
+
 class VkLongpollMode(IntEnum):
     """ Дополнительные опции ответа
 
@@ -26,17 +28,17 @@ class VkLongpollMode(IntEnum):
     GET_ATTACHMENTS = 2
 
     #: Возвращать расширенный набор событий
-    GET_EXTENDED = 2 ** 3
+    GET_EXTENDED = 2**3
 
     #: возвращать pts для метода `messages.getLongPollHistory`
-    GET_PTS = 2 ** 5
+    GET_PTS = 2**5
 
     #: В событии с кодом 8 (друг стал онлайн) возвращать
     #: дополнительные данные в поле `extra`
-    GET_EXTRA_ONLINE = 2 ** 6
+    GET_EXTRA_ONLINE = 2**6
 
     #: Возвращать поле `random_id`
-    GET_RANDOM_ID = 2 ** 7
+    GET_RANDOM_ID = 2**7
 
 
 DEFAULT_MODE = sum(VkLongpollMode)
@@ -72,17 +74,14 @@ class VkEventType(IntEnum):
     #: пришедших до сообщения с $local_id.
     READ_ALL_OUTGOING_MESSAGES = 7
 
-    #: Друг $user_id стал онлайн.  $extra не равен 0, если в mode был передан
-    #флаг 64.
+    #: Друг $user_id стал онлайн. $extra не равен 0, если в mode был передан флаг 64.
     #: В младшем байте числа extra лежит идентификатор платформы
-    #: (см.  :class:`VkPlatform`).
+    #: (см. :class:`VkPlatform`).
     #: $timestamp — время последнего действия пользователя $user_id на сайте.
     USER_ONLINE = 8
 
-    #: Друг $user_id стал оффлайн ($flags равен 0, если пользователь покинул
-    #сайт и 1,
-    #: если оффлайн по таймауту).  $timestamp — время последнего действия
-    #пользователя
+    #: Друг $user_id стал оффлайн ($flags равен 0, если пользователь покинул сайт и 1,
+    #: если оффлайн по таймауту). $timestamp — время последнего действия пользователя
     #: $user_id на сайте.
     USER_OFFLINE = 9
 
@@ -101,8 +100,7 @@ class VkEventType(IntEnum):
     #: Только для диалогов сообществ.
     PEER_FLAGS_SET = 12
 
-    #: Удаление всех сообщений в диалоге $peer_id с идентификаторами вплоть до
-    #$local_id.
+    #: Удаление всех сообщений в диалоге $peer_id с идентификаторами вплоть до $local_id.
     PEER_DELETE_ALL = 13
 
     #: Восстановление недавно удаленных сообщений в диалоге $peer_id с
@@ -118,14 +116,13 @@ class VkEventType(IntEnum):
     CHAT_UPDATE = 52
 
     #: Пользователь $user_id набирает текст в диалоге.
-    #: Событие приходит раз в ~5 секунд при наборе текста.  $flags = 1.
+    #: Событие приходит раз в ~5 секунд при наборе текста. $flags = 1.
     USER_TYPING = 61
 
     #: Пользователь $user_id набирает текст в беседе $chat_id.
     USER_TYPING_IN_CHAT = 62
 
-    #: Пользователь $user_id записывает голосовое сообщение в диалоге/беседе
-    #$peer_id
+    #: Пользователь $user_id записывает голосовое сообщение в диалоге/беседе $peer_id
     USER_RECORDING_VOICE = 64
 
     #: Пользователь $user_id совершил звонок с идентификатором $call_id.
@@ -186,35 +183,35 @@ class VkMessageFlag(IntEnum):
     OUTBOX = 2
 
     #: На сообщение был создан ответ.
-    REPLIED = 2 ** 2
+    REPLIED = 2**2
 
     #: Помеченное сообщение.
-    IMPORTANT = 2 ** 3
+    IMPORTANT = 2**3
 
     #: Сообщение отправлено через чат.
-    CHAT = 2 ** 4
+    CHAT = 2**4
 
     #: Сообщение отправлено другом.
     #: Не применяется для сообщений из групповых бесед.
-    FRIENDS = 2 ** 5
+    FRIENDS = 2**5
 
     #: Сообщение помечено как "Спам".
-    SPAM = 2 ** 6
+    SPAM = 2**6
 
     #: Сообщение удалено (в корзине).
-    DELETED = 2 ** 7
+    DELETED = 2**7
 
     #: Сообщение проверено пользователем на спам.
-    FIXED = 2 ** 8
+    FIXED = 2**8
 
     #: Сообщение содержит медиаконтент
-    MEDIA = 2 ** 9
+    MEDIA = 2**9
 
     #: Приветственное сообщение от сообщества.
-    HIDDEN = 2 ** 16
+    HIDDEN = 2**16
 
     #: Сообщение удалено для всех получателей.
-    DELETED_ALL = 2 ** 17
+    DELETED_ALL = 2**17
 
 
 class VkPeerFlag(IntEnum):
@@ -261,7 +258,9 @@ class VkChatEventType(IntEnum):
     KEYBOARD_RECEIVED = 11
 
 
-MESSAGE_EXTRA_FIELDS = ['peer_id', 'timestamp', 'text', 'extra_values', 'attachments', 'random_id']
+MESSAGE_EXTRA_FIELDS = [
+    'peer_id', 'timestamp', 'text', 'extra_values', 'attachments', 'random_id'
+]
 MSGID = 'message_id'
 
 EVENT_ATTRS_MAPPING = {
@@ -312,8 +311,10 @@ ALL_EVENT_ATTRS = get_all_event_attrs()
 PARSE_PEER_ID_EVENTS = [
     k for k, v in six.iteritems(EVENT_ATTRS_MAPPING) if 'peer_id' in v
 ]
-PARSE_MESSAGE_FLAGS_EVENTS = [VkEventType.MESSAGE_FLAGS_REPLACE,
-    VkEventType.MESSAGE_NEW]
+PARSE_MESSAGE_FLAGS_EVENTS = [
+    VkEventType.MESSAGE_FLAGS_REPLACE,
+    VkEventType.MESSAGE_NEW
+]
 
 
 class Event(object):
@@ -401,6 +402,10 @@ class Event(object):
             self.__setattr__(k, v)
 
     def _parse_peer_id(self):
+        if not self.peer_id:
+            print(self.raw)
+            return
+
         if self.peer_id < 0:  # Сообщение от/для группы
             self.from_group = True
             self.group_id = abs(self.peer_id)
@@ -417,10 +422,14 @@ class Event(object):
             self.user_id = self.peer_id
 
     def _parse_message_flags(self):
-        self.message_flags = set(x for x in VkMessageFlag if self.flags & x)
+        self.message_flags = set(
+            x for x in VkMessageFlag if self.flags & x
+        )
 
     def _parse_peer_flags(self):
-        self.peer_flags = set(x for x in VkPeerFlag if self.flags & x)
+        self.peer_flags = set(
+            x for x in VkPeerFlag if self.flags & x
+        )
 
     def _parse_message(self):
         if self.type is VkEventType.MESSAGE_NEW:
@@ -478,16 +487,20 @@ class VkLongPoll(object):
         (для сообщений сообщества с ключом доступа пользователя)
     """
 
-    __slots__ = ('vk', 'wait', 'mode', 'preload_messages', 'group_id',
+    __slots__ = (
+        'vk', 'wait', 'mode', 'preload_messages', 'group_id',
         'url', 'session',
-        'key', 'server', 'ts', 'pts')
+        'key', 'server', 'ts', 'pts'
+    )
 
     #: Класс для событий
     DEFAULT_EVENT_CLASS = Event
 
     #: События, для которых можно загрузить данные сообщений из API
-    PRELOAD_MESSAGE_EVENTS = [VkEventType.MESSAGE_NEW,
-        VkEventType.MESSAGE_EDIT]
+    PRELOAD_MESSAGE_EVENTS = [
+        VkEventType.MESSAGE_NEW,
+        VkEventType.MESSAGE_EDIT
+    ]
 
     def __init__(self, vk, wait=25, mode=DEFAULT_MODE,
                  preload_messages=False, group_id=None):
@@ -511,6 +524,7 @@ class VkLongPoll(object):
         return self.DEFAULT_EVENT_CLASS(raw_event)
 
     def update_longpoll_server(self, update_ts=True):
+        """ Update longpoll ts and pts """
         values = {
             'lp_version': '3',
             'need_pts': self.pts
@@ -518,7 +532,7 @@ class VkLongPoll(object):
 
         if self.group_id:
             values['group_id'] = self.group_id
-            
+
         response = self.vk.method('messages.getLongPollServer', values)
 
         self.key = response['key']
@@ -545,9 +559,11 @@ class VkLongPoll(object):
             'version': 14
         }
 
-        response = self.session.get(self.url,
+        response = self.session.get(
+            self.url,
             params=values,
-            timeout=self.wait + 10).json()
+            timeout=self.wait + 10
+        ).json()
 
         if 'failed' not in response:
             self.ts = response['ts']
@@ -579,6 +595,7 @@ class VkLongPoll(object):
         """ Предзагрузка данных сообщений из API
 
         :type events: list of Event
+        :type extended: extended fields
         """
         message_ids = set()
 
