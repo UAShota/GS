@@ -6,7 +6,6 @@
 :copyright: (c) 2019 python273
 """
 
-from collections import defaultdict
 from datetime import datetime
 from enum import IntEnum
 
@@ -28,17 +27,17 @@ class VkLongpollMode(IntEnum):
     GET_ATTACHMENTS = 2
 
     #: Возвращать расширенный набор событий
-    GET_EXTENDED = 2**3
+    GET_EXTENDED = 2 ** 3
 
     #: возвращать pts для метода `messages.getLongPollHistory`
-    GET_PTS = 2**5
+    GET_PTS = 2 ** 5
 
     #: В событии с кодом 8 (друг стал онлайн) возвращать
     #: дополнительные данные в поле `extra`
-    GET_EXTRA_ONLINE = 2**6
+    GET_EXTRA_ONLINE = 2 ** 6
 
     #: Возвращать поле `random_id`
-    GET_RANDOM_ID = 2**7
+    GET_RANDOM_ID = 2 ** 7
 
 
 DEFAULT_MODE = sum(VkLongpollMode)
@@ -50,6 +49,9 @@ class VkEventType(IntEnum):
     `Подробнее в документации VK API
     <https://vk.com/dev/using_longpoll?f=3.+Структура+событий>`__
     """
+
+    # Unknown
+    MESSAGE_ERROR_DATA = 0
 
     #: Замена флагов сообщения (FLAGS:=$flags)
     MESSAGE_FLAGS_REPLACE = 1
@@ -183,35 +185,35 @@ class VkMessageFlag(IntEnum):
     OUTBOX = 2
 
     #: На сообщение был создан ответ.
-    REPLIED = 2**2
+    REPLIED = 2 ** 2
 
     #: Помеченное сообщение.
-    IMPORTANT = 2**3
+    IMPORTANT = 2 ** 3
 
     #: Сообщение отправлено через чат.
-    CHAT = 2**4
+    CHAT = 2 ** 4
 
     #: Сообщение отправлено другом.
     #: Не применяется для сообщений из групповых бесед.
-    FRIENDS = 2**5
+    FRIENDS = 2 ** 5
 
     #: Сообщение помечено как "Спам".
-    SPAM = 2**6
+    SPAM = 2 ** 6
 
     #: Сообщение удалено (в корзине).
-    DELETED = 2**7
+    DELETED = 2 ** 7
 
     #: Сообщение проверено пользователем на спам.
-    FIXED = 2**8
+    FIXED = 2 ** 8
 
     #: Сообщение содержит медиаконтент
-    MEDIA = 2**9
+    MEDIA = 2 ** 9
 
     #: Приветственное сообщение от сообщества.
-    HIDDEN = 2**16
+    HIDDEN = 2 ** 16
 
     #: Сообщение удалено для всех получателей.
-    DELETED_ALL = 2**17
+    DELETED_ALL = 2 ** 17
 
 
 class VkPeerFlag(IntEnum):
@@ -360,7 +362,10 @@ class Event(object):
             self._dict_to_attr(self.extra_values)
 
         if self.type in PARSE_PEER_ID_EVENTS:
-            self._parse_peer_id()
+            if self.peer_id:
+                self._parse_peer_id()
+            else:
+                self.type = VkEventType.MESSAGE_ERROR_DATA
 
         if self.type in PARSE_MESSAGE_FLAGS_EVENTS:
             self._parse_message_flags()
@@ -402,10 +407,6 @@ class Event(object):
             self.__setattr__(k, v)
 
     def _parse_peer_id(self):
-        if not self.peer_id:
-            print(self.raw)
-            return
-
         if self.peer_id < 0:  # Сообщение от/для группы
             self.from_group = True
             self.group_id = abs(self.peer_id)
