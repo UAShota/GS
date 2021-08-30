@@ -4,9 +4,10 @@ Changing storage values
 import json
 import math
 import re
-import requests
 import traceback
 from datetime import datetime, timedelta
+
+import requests
 from matplotlib import pyplot as plt
 
 from .command_custom import DwgbCmdConst, DwgbCmdCustom
@@ -41,7 +42,7 @@ class DwgbCmdAdminStorage(DwgbCmdCustom):
         self.regSave = self.getRegex(r"^(хорошо|\d+)")
         self.regBag = self.getRegex(r"^золота - \d+\.")
         self.regInventory = self.getRegex(r"^(.+?) - (\d+)\.$")
-        self.channel = 0
+        self.message = None
 
     def work(self, message: DwgbMessage):
         """ Обработка выражения """
@@ -180,11 +181,11 @@ class DwgbCmdAdminStorage(DwgbCmdCustom):
             self.transport.writeChannel("Нет записи в реестре", message, True)
             return True
         # Отправим
-        self.setcostgraph(message)
+        self.setcostgraph(message, True)
         # Не удалось совершить операцию
         return True
 
-    def setcostgraph(self, message: DwgbMessage):
+    def setcostgraph(self, message: DwgbMessage, showgraph: bool):
         """ View a graph of cost """
         tmp_url = self._API_URL % (self._ACT_TYPE_ITEM % DwgbCmdConst.ITEM.code, self.transport.api)
         try:
@@ -202,13 +203,14 @@ class DwgbCmdAdminStorage(DwgbCmdCustom):
                 DwgbCmdConst.ITEM.average += tmp_param[1]
             DwgbCmdConst.ITEM.average //= len(tmp_params)
             # Сейв и отправка
-            plt.plot(tmp_label, tmp_data, "o-", markersize=4)
-            plt.xticks(rotation=90)
-            plt.rc("grid", lw=0.2)
-            plt.grid(True)
-            plt.savefig(self.__PLOT_IMAGE)
-            plt.cla()
-            self.transport.writeChannel("%s%s\nСредняя: %s, в базе: %s, сток: %s, срок: %s" % (DwgbCmdConst.ITEM.icon, DwgbCmdConst.ITEM.id.capitalize(), DwgbCmdConst.ITEM.average, DwgbCmdConst.ITEM.cost, DwgbCmdConst.ITEM.trade, (datetime.today() - DwgbCmdConst.ITEM.date).days), message, False, 120, self.__PLOT_IMAGE)
+            if showgraph:
+                plt.plot(tmp_label, tmp_data, "o-", markersize=4)
+                plt.xticks(rotation=90)
+                plt.rc("grid", lw=0.2)
+                plt.grid(True)
+                plt.savefig(self.__PLOT_IMAGE)
+                plt.cla()
+                self.transport.writeChannel("%s%s\nСредняя: %s, в базе: %s, сток: %s, срок: %s" % (DwgbCmdConst.ITEM.icon, DwgbCmdConst.ITEM.id.capitalize(), DwgbCmdConst.ITEM.average, DwgbCmdConst.ITEM.cost, DwgbCmdConst.ITEM.trade, (datetime.today() - DwgbCmdConst.ITEM.date).days), message, False, 120, self.__PLOT_IMAGE)
         except Exception as e:
             print("Read failed %s %s" % (e, traceback.format_exc().replace("\n", " ")))
 
@@ -243,7 +245,7 @@ class DwgbCmdAdminStorage(DwgbCmdCustom):
         self.date = self.setcosttime()
         # Установим новую цену
         self.setcostlast()
-        self.setcostgraph(message)
+        self.setcostgraph(message, False)
         # Проверим цену
         tmp_item = DwgbCmdConst.ITEM
         if tmp_item.average <= 0:
@@ -260,14 +262,14 @@ class DwgbCmdAdminStorage(DwgbCmdCustom):
 
     def loadbag(self, message: DwgbMessage):
         """ Загрузка сумки для сверки значений """
-        self.channel = message.channel
-        message.channel = self._GAME_BOT_ID
-        # Отправим
-        self.transport.writeChannel("Мой инвентарь", message, False)
+        self.message = DwgbMessage()
+        self.message.channel = self._GAME_BOT_ID
+        self.transport.writeChannel("Мой инвентарь", self.message, False)
+        # Сохраним для приема
+        self.message.channel = message.channel
 
     def rebag(self, message: DwgbMessage):
         """ Проверка предметов """
-        message.channel = self.channel
         tmp_bags = self.regInventory.findall(message.text)
         tmp_item: DwgbStorage
         tmp_key: str
@@ -293,7 +295,7 @@ class DwgbCmdAdminStorage(DwgbCmdCustom):
             # Установим
             if tmp_item.count != tmp_count:
                 self.setStorage(0, tmp_key, -tmp_item.count + tmp_count)
-                self.transport.writeChannel("🐼Восстановлено количество %s для %s%s" % (tmp_count, tmp_item.icon, tmp_item.id.capitalize()), message, False)
+                self.transport.writeChannel("🐼Восстановлено количество %s для %s%s" % (tmp_count, tmp_item.icon, tmp_item.id.capitalize()), self.message, False)
             # Страница
             tmp_page = "страница - " + tmp_key
             if tmp_page in tmp_dict:
@@ -303,6 +305,6 @@ class DwgbCmdAdminStorage(DwgbCmdCustom):
             # Сохраним
             if tmp_item.valueex != tmp_count:
                 self.setStorage(0, tmp_key, -tmp_item.valueex + tmp_count, -tmp_item.valueex + tmp_count)
-                self.transport.writeChannel("🐼Восстановлены страницы %s для %s%s" % (tmp_count, tmp_item.icon, tmp_item.id.capitalize()), message, False)
+                self.transport.writeChannel("🐼Восстановлены страницы %s для %s%s" % (tmp_count, tmp_item.icon, tmp_item.id.capitalize()), self.message, False)
         # Все хорошо
         return True
