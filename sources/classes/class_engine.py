@@ -7,8 +7,7 @@ import traceback
 from .class_database import DwgbDatabase
 from .class_message import DwgbMessage
 from .class_transport import DwgbTransport
-from ..commands import DwgbCmdConsts, DwgbCmdAdminActivity, DwgbCmdAdminStorage, DwgbCmdButtons, DwgbCmdHelp, DwgbCmdProfile, DwgbCmdPapper, DwgbCmdBalance, DwgbCmdStorage, DwgbCmdTransferGold, DwgbCmdTransferItem, DwgbCmdBaf, DwgbCmdGetItem, DwgbCmdConvert, DwgbCmdTrader, DwgbCmdCustom
-from ..commands.command_flooder import DwgbCmdFlooder
+from ..commands import DwgbCmdConsts, DwgbCmdAdminActivity, DwgbCmdBaraban, DwgbCmdFlooder, DwgbCmdAdminStorage, DwgbCmdButtons, DwgbCmdHelp, DwgbCmdProfile, DwgbCmdPapper, DwgbCmdBalance, DwgbCmdStorage, DwgbCmdTransferGold, DwgbCmdTransferItem, DwgbCmdBaf, DwgbCmdGetItem, DwgbCmdConvert, DwgbCmdTrader, DwgbCmdCustom
 
 
 class DwgbEngine(object):
@@ -42,6 +41,7 @@ class DwgbEngine(object):
         self.registerCommand(DwgbCmdConsts.SAVEPROFILE, DwgbCmdProfile)
         self.registerCommand(DwgbCmdConsts.PAPPER, DwgbCmdPapper)
         self.registerCommand(DwgbCmdConsts.BALANCE, DwgbCmdBalance)
+        self.registerCommand(DwgbCmdConsts.BARABAN, DwgbCmdBaraban)
         self.registerCommand(DwgbCmdConsts.STORAGE, DwgbCmdStorage)
         self.registerCommand(DwgbCmdConsts.TRANSFERGOLD, DwgbCmdTransferGold)
         self.registerCommand(DwgbCmdConsts.TRANSFERITEM, DwgbCmdTransferItem)

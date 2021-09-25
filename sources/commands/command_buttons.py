@@ -14,8 +14,9 @@ class DwgbCmdButtons(DwgbCmdCustom):
     def __init__(self, database: DwgbDatabase, transport: DwgbTransport):
         """ Конструктор """
         super().__init__(database, transport)
-        self.club = VkApi(token="")
-        self.regButtons = self.getRegex(r"^склад кнопки$")
+        self.club = VkApi(token="912aae31dcf728d5084549ee55de9d04b4ca64ed7d7d92729cd09582d0e7508927c1961dd6ec299d80903")
+        self.regButtonsFull = self.getRegex(r"^склад кнопки$")
+        self.regButtonsBaf = self.getRegex(r"^склад миникнопки$")
         self.regBaf = self.getRegex(r"^(?:\[.+?\]|хочу) апо (\d+)$")
         self.regLinks = self.getRegex(r"^(?:\[.+?\]|хочу) (💬|ссылки)$")
 
@@ -26,8 +27,10 @@ class DwgbCmdButtons(DwgbCmdCustom):
             return self.showBaf(message, tmp_match)
         elif self.regLinks.match(message.text):
             return self.showLinks(message)
-        elif self.regButtons.match(message.text):
-            return self.showButtons(message)
+        elif self.regButtonsFull.match(message.text):
+            return self.showButtonsFull(message)
+        elif self.regButtonsBaf.match(message.text):
+            return self.showButtonsBaf(message)
         # Ничего не найдено
         return False
 
@@ -42,9 +45,13 @@ class DwgbCmdButtons(DwgbCmdCustom):
         self.transport.writeChannel("", message, False, -1, client=self.club, params=tmp_params)
         return True
 
-    def showButtons(self, message: DwgbMessage):
+    def showButtonsFull(self, message: DwgbMessage):
         """ Показ набора кнопок """
         return self.send(message, "Ойбай кнопки", '{"one_time":false,"buttons":[[{"action":{"type":"text","label":"🌕","payload":""},"color":"secondary"},{"action":{"type":"text","label":"🍄","payload":""},"color":"secondary"},{"action":{"type":"text","label":"📕","payload":""},"color":"secondary"},{"action":{"type":"text","label":"🛒","payload":""},"color":"secondary"}],[{"action":{"type":"text","label":"Апо 1","payload":""},"color":"secondary"},{"action":{"type":"text","label":"Апо 2","payload":""},"color":"secondary"},{"action":{"type":"text","label":"Апо 3","payload":""},"color":"secondary"},{"action":{"type":"text","label":"Апо 4","payload":""},"color":"secondary"}]]}')
+
+    def showButtonsBaf(self, message: DwgbMessage):
+        """ Показ набора кнопок """
+        return self.send(message, "Ойбай кнопки", '{"one_time":false,"buttons":[[{"action":{"type":"text","label":"Апо 1","payload":""},"color":"secondary"},{"action":{"type":"text","label":"Апо 2","payload":""},"color":"secondary"},{"action":{"type":"text","label":"Апо 3","payload":""},"color":"secondary"},{"action":{"type":"text","label":"Апо 4","payload":""},"color":"secondary"}]]}')
 
     def showBaf(self, message: DwgbMessage, tmp_match):
         """ Показ кнопок бафа """

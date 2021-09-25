@@ -195,7 +195,7 @@ class DwgbCmdCustom(object):
 
     def getRegex(self, pattern: str):
         """ Создание регулярного выражения """
-        return re.compile(pattern, re.IGNORECASE | re.UNICODE | re.DOTALL | re.MULTILINE)
+        return re.compile(pattern, re.IGNORECASE | re.UNICODE | re.DOTALL | re.MULTILINE | re.S)
 
     def getStorageRow(self, row: dict):
         """ Разбор строки запроса """

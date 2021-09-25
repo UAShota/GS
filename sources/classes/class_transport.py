@@ -77,6 +77,16 @@ class DwgbTransport(object):
         # На случай если ничего не найдено
         return str(peerid)
 
+    def getText(self, event: {}, data: dict):
+        """ Получение текста из сообщения """
+        tmp_text = event.text
+        for tmp_row in data["items"]:
+            if "conversation_message_id" not in tmp_row:
+                continue
+            if (tmp_row["conversation_message_id"] == event.raw[10]) and (len(tmp_row['fwd_messages']) > 0):
+                tmp_text = "\n" + tmp_row['fwd_messages'][0]["text"]
+        return tmp_text
+
     def readEvents(self, events: []):
         """ Запрос параметров сообщения из расширенных полей сообщения """
         tmp_messages = []
@@ -92,7 +102,7 @@ class DwgbTransport(object):
             tmp_message.id = tmp_event.message_id
             tmp_message.channel = tmp_event.peer_id
             tmp_message.name = self.getName(tmp_message.user, tmp_data)
-            tmp_message.text = tmp_event.text
+            tmp_message.text = self.getText(tmp_event, tmp_data)
             tmp_messages.append(tmp_message)
         return tmp_messages
 

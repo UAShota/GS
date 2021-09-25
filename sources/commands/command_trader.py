@@ -1,12 +1,6 @@
 """
 Trader
 """
-import json
-from threading import Thread
-from time import sleep
-
-import requests
-import urllib3
 
 from .command_custom import DwgbCmdCustom, DwgbCmdConst
 from ..classes import DwgbDatabase, DwgbTransport, DwgbMessage
@@ -20,8 +14,6 @@ class DwgbCmdTrader(DwgbCmdCustom):
         super().__init__(database, transport)
         self.regAccept = self.getRegex(r"^⚖.+Вы успешно приобрели с аукциона предмет (\d+)\*(.+) - (\d+)")
         self.regScrolls = self.getRegex(r"^📜Вы получили 100 пустых страниц")
-        self.buytimes = {}
-        self.thread = Thread(target=self.threadbuy).start()
 
     def work(self, message: DwgbMessage):
         """ Обработка выражения """
@@ -31,54 +23,6 @@ class DwgbCmdTrader(DwgbCmdCustom):
             return True
         else:
             return False
-
-    def threadbuy(self):
-        """ Покупка """
-        urllib3.disable_warnings()
-        while True:
-            try:
-                # Запросим файл
-                tmp_response = requests.get("https://empirehopes.space/export.txt", verify=False)
-                if not tmp_response.ok:
-                    print("Trade error: %s" % tmp_response.text)
-                    sleep(120)
-                    continue
-                # Загрузим данные
-                tmp_json = json.loads(tmp_response.content.decode("utf-8"))
-                # Переберем все элементы
-                for tmp_key, tmp_packet in tmp_json.items():
-                    if not tmp_packet:
-                        continue
-                    # С этого списка уже все купили
-                    tmp_time = tmp_packet[0]
-                    tmp_name = tmp_packet[2]
-                    if tmp_key in self.buytimes and (self.buytimes[tmp_key] == tmp_time):
-                        continue
-                    for tmp_item in tmp_packet[1]:
-                        tmp_count = tmp_item[0]
-                        tmp_cost = tmp_item[1]
-                        tmp_lot = tmp_item[2]
-                        # Определим нужно ли его скупать
-                        if tmp_name not in DwgbCmdConst.STORE_DATA:
-                            continue
-                        # Вытащим
-                        tmp_store = DwgbCmdConst.STORE_DATA[tmp_name]
-                        if (tmp_store.count + tmp_count >= tmp_store.limit) or (tmp_count > DwgbCmdConst.STORE_FREE):
-                            continue
-                        # Цена
-                        if tmp_store.trade < int(tmp_cost / tmp_count):
-                            continue
-                        # Купим
-                        message = DwgbMessage()
-                        message.channel = self._GAME_BOT_ID
-                        self.transport.writeChannel("Купить лот %s" % tmp_lot, message, False)
-                        sleep(15)
-                    self.buytimes[tmp_key] = tmp_time
-                sleep(60)
-            except Exception as e:
-                print(e)
-                print(e.__traceback__)
-                sleep(120)
 
     def trade(self, message: DwgbMessage):
         """ Учет покупки """

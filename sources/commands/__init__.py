@@ -11,6 +11,8 @@ from .command_consts import DwgbCmdConsts
 from .command_convert import DwgbCmdConvert
 from .command_custom import DwgbCmdCustom
 from .command_getitem import DwgbCmdGetItem
+from .command_flooder import DwgbCmdFlooder
+from .command_baraban import DwgbCmdBaraban
 from .command_help import DwgbCmdHelp
 from .command_papper import DwgbCmdPapper
 from .command_profile import DwgbCmdProfile
