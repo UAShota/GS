@@ -141,7 +141,10 @@ class DwgbCmdBaraban(DwgbCmdCustom):
                 continue
             tmp_wrong = False
             for tmp_i in range(0, tmp_len):
-                if ((tmp_solve[tmp_i] == " ") or (tmp_name[tmp_i] == " ")) and (tmp_name[tmp_i] != tmp_solve[tmp_i]):
+                if (tmp_solve[tmp_i] != "■") and (tmp_name[tmp_i] != tmp_solve[tmp_i]):
+                    tmp_wrong = True
+                    break
+                if (tmp_name[tmp_i] == " ") and (tmp_name[tmp_i] != tmp_solve[tmp_i]):
                     tmp_wrong = True
                     break
             if tmp_wrong:
