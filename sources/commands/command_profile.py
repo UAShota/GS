@@ -32,7 +32,7 @@ class DwgbCmdProfile(DwgbCmdCustom):
         """ Конструктор """
         super().__init__(database, transport)
         self.database.exec(self.__QUERY_PROFILE_CREATE, {})
-        self.regGet = self.getRegex(r"^\[id(\d+)\|(.+?)\].+\((\d+)\).+подземелья: (\d+).+👊(\d+) 🖐(\d+) ❤(\d+) 🍀(\d+) 🗡(\d+) 🛡(\d+)")
+        self.regGet = self.getRegex(r"^[👑]?\[id(\d+)\|(.+?)\].+?уровень : (\d+).+?👊(\d+) 🖐(\d+) ❤(\d+) 🍀(\d+) 🗡(\d+) 🛡(\d+)")
         self.regShow = self.getRegex(r"^хочу профиль$")
 
     def work(self, message: DwgbMessage):
@@ -100,14 +100,14 @@ class DwgbCmdProfile(DwgbCmdCustom):
         # Учет
         tmp_now = datetime.today()
         tmp_params = dict()
-        tmp_params["elite"] = int(data[3])
-        tmp_params["level"] = int(data[4])
-        tmp_params["power"] = int(data[5])
-        tmp_params["speed"] = int(data[6])
-        tmp_params["hp"] = int(data[7])
-        tmp_params["funny"] = int(data[8])
-        tmp_params["attack"] = int(data[9])
-        tmp_params["defend"] = int(data[10])
+        tmp_params["elite"] = 0
+        tmp_params["level"] = int(data[3])
+        tmp_params["power"] = int(data[4])
+        tmp_params["speed"] = int(data[5])
+        tmp_params["hp"] = int(data[6])
+        tmp_params["funny"] = int(data[7])
+        tmp_params["attack"] = int(data[8])
+        tmp_params["defend"] = int(data[9])
         tmp_params["date"] = tmp_now
         tmp_snapshot = self.database.queryone(self.__QUERY_PROFILE_GET, {"id": data[1]})
         if tmp_snapshot is None:
